@@ -1,0 +1,259 @@
+/* ── LandingPage.css ─────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&display=swap');
+
+/* Reset global — remove margens e fundo branco */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #0a0a0a;
+}
+
+.lp-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #0a0a0a;
+  font-family: 'Barlow', 'Helvetica Neue', sans-serif;
+}
+
+/* ── Fundo ───────────────────────────────────────────────────────────────── */
+
+.lp-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('');          /* ← URL da imagem aqui */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #1a0000;
+  z-index: 0;
+}
+
+/* Overlay — 55% de opacidade */
+.lp-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1;
+}
+
+/* ── Cantos decorativos ──────────────────────────────────────────────────── */
+
+.lp-corner-tl,
+.lp-corner-br {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  z-index: 2;
+}
+
+.lp-corner-tl {
+  top: 28px;
+  left: 28px;
+  border-top: 2px solid rgba(204, 0, 0, 0.65);
+  border-left: 2px solid rgba(204, 0, 0, 0.65);
+}
+
+.lp-corner-br {
+  bottom: 28px;
+  right: 28px;
+  border-bottom: 2px solid rgba(204, 0, 0, 0.65);
+  border-right: 2px solid rgba(204, 0, 0, 0.65);
+}
+
+/* ── Conteúdo central ────────────────────────────────────────────────────── */
+
+.lp-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 48px 32px;
+}
+
+/* ── Logo ────────────────────────────────────────────────────────────────── */
+
+.lp-logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 4px 32px rgba(0, 0, 0, 0.95));
+}
+
+.lp-logo-img {
+  max-height: 220px;
+  max-width: 520px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ── Divisor ─────────────────────────────────────────────────────────────── */
+
+.lp-divider {
+  width: 48px;
+  height: 2px;
+  background: #cc0000;
+  opacity: 0.7;
+}
+
+/* ── Botões verticais ────────────────────────────────────────────────────── */
+
+.lp-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.lp-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+/* brilho no hover */
+.lp-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.4s ease;
+}
+
+.lp-btn:hover::after {
+  transform: translateX(100%);
+}
+
+/* ── Primário ────────────────────────────────────────────────────────────── */
+
+.lp-btn-primary {
+  background: rgba(180, 0, 0, 0.75);
+  border-left: 4px solid #ff1a1a;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(180, 0, 0, 0.35);
+}
+
+.lp-btn-primary:hover {
+  background: rgba(204, 0, 0, 0.90);
+  box-shadow: 0 8px 32px rgba(204, 0, 0, 0.55);
+  transform: translateX(4px);
+}
+
+.lp-btn-primary .lp-btn-icon {
+  color: #ff6666;
+}
+
+.lp-btn-primary .lp-btn-title {
+  color: #ffffff;
+}
+
+.lp-btn-primary .lp-btn-desc {
+  color: rgba(255, 200, 200, 0.75);
+}
+
+.lp-btn-primary .lp-btn-arrow {
+  color: rgba(255, 150, 150, 0.7);
+}
+
+/* ── Secundário ──────────────────────────────────────────────────────────── */
+
+.lp-btn-secondary {
+  background: rgba(20, 0, 0, 0.60);
+  border-left: 4px solid rgba(204, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.lp-btn-secondary:hover {
+  background: rgba(40, 0, 0, 0.80);
+  border-left-color: #cc0000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transform: translateX(4px);
+}
+
+.lp-btn-secondary .lp-btn-icon {
+  color: rgba(204, 0, 0, 0.7);
+}
+
+.lp-btn-secondary .lp-btn-title {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.lp-btn-secondary .lp-btn-desc {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.lp-btn-secondary .lp-btn-arrow {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.lp-btn-secondary:hover .lp-btn-arrow {
+  color: rgba(204, 0, 0, 0.7);
+}
+
+/* ── Partes internas do botão ────────────────────────────────────────────── */
+
+.lp-btn-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.lp-btn-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.lp-btn-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  line-height: 1;
+}
+
+.lp-btn-desc {
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+}
+
+.lp-btn-arrow {
+  font-size: 18px;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.lp-btn:hover .lp-btn-arrow {
+  transform: translateX(4px);
+}
