@@ -36,7 +36,7 @@ const LandingPage = () => {
             <div className="lp-btn-arrow">→</div>
           </button>
 
-          <button className="lp-btn lp-btn-secondary">
+          <button className="lp-btn lp-btn-secondary" onClick={() => window.location.href = '/diario'}>
             <div className="lp-btn-icon">◈</div>
             <div className="lp-btn-body">
               <span className="lp-btn-title">Modo Diario</span>

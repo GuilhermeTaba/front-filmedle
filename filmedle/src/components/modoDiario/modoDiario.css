@@ -1,0 +1,523 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap');
+
+/* ── ROOT TOKENS ─────────────────────────────────────────── */
+:root {
+  --red:        #cc0000;
+  --red-dark:   #8b0000;
+  --red-bright: #e50000;
+  --bg:         #0a0a0a;
+  --surface:    rgba(20, 20, 20, 0.92);
+  --surface-2:  rgba(30, 30, 30, 0.85);
+  --border:     rgba(204, 0, 0, 0.35);
+  --text:       #f0f0f0;
+  --text-dim:   #888;
+  --gold:       #e8b84b;
+  --green:      #2ecc71;
+  --wrong:      #e74c3c;
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.fd-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── BACKGROUND IMAGE ────────────────────────────────────── */
+.fd-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.fd-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.55) 40%,
+    rgba(0, 0, 0, 0.82) 100%
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* scan-line noise */
+.fd-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.fd-container {
+  position: relative;
+  z-index: 2;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.fd-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+/* Logo como imagem */
+.fd-logo-img {
+  max-width: 340px;
+  width: 60%;
+  height: auto;
+  display: block;
+  margin: 0 auto 10px;
+  /* mantém o brilho vermelho característico */
+  filter: drop-shadow(0 0 24px rgba(204, 0, 0, 0.55));
+}
+
+/* fallback: se não tiver imagem, mostra o texto */
+.fd-logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 0 40px rgba(204,0,0,0.6),
+    3px 3px 0 var(--red-dark);
+  margin: 0 0 6px;
+  line-height: 1;
+}
+
+.fd-mode-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+  border: 1px solid var(--border);
+  padding: 5px 14px;
+  border-radius: 2px;
+}
+
+.fd-mode-tag::before {
+  content: '◆';
+  font-size: 0.55rem;
+}
+
+/* ── CLUE BOX ────────────────────────────────────────────── */
+.fd-clue-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--red);
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fd-clue-box::after {
+  content: '?';
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 5rem;
+  font-weight: 900;
+  color: rgba(204,0,0,0.08);
+  line-height: 1;
+}
+
+.fd-clue-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+  margin-bottom: 8px;
+}
+
+.fd-clue-text {
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.fd-attempts-counter {
+  text-align: right;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.fd-attempts-counter span {
+  color: var(--red-bright);
+  font-weight: 700;
+}
+
+/* ── SEARCH INPUT ────────────────────────────────────────── */
+.fd-search-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.fd-search-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--red);
+  color: var(--text);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 16px 52px 16px 20px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, background 0.2s;
+  caret-color: var(--red-bright);
+}
+
+.fd-search-input::placeholder {
+  color: rgba(255,255,255,0.2);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.fd-search-input:focus {
+  border-color: var(--red-bright);
+  background: rgba(25,25,25,0.95);
+}
+
+.fd-search-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--red);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+/* ── DROPDOWN ────────────────────────────────────────────── */
+.fd-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: #111;
+  border: 1px solid var(--border);
+  border-top: none;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: var(--red) transparent;
+}
+
+.fd-dropdown::-webkit-scrollbar { width: 4px; }
+.fd-dropdown::-webkit-scrollbar-thumb { background: var(--red); }
+
+.fd-dropdown-item {
+  padding: 12px 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fd-dropdown-item:hover {
+  background: var(--red-dark);
+  color: #fff;
+}
+
+.fd-dropdown-item .fd-item-id {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+
+.fd-dropdown-empty {
+  padding: 16px 20px;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  font-family: 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+}
+
+/* ── GUESS BTN ───────────────────────────────────────────── */
+.fd-btn-guess {
+  width: 100%;
+  background: linear-gradient(90deg, var(--red-dark), var(--red));
+  color: #fff;
+  border: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 15px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity 0.2s, transform 0.1s;
+  margin-top: 4px;
+}
+
+.fd-btn-guess:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.fd-btn-guess:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.fd-btn-guess:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.fd-btn-guess .fd-btn-arrow {
+  font-size: 1.2rem;
+}
+
+/* ── ATTEMPTS TABLE ──────────────────────────────────────── */
+.fd-attempts-section {
+  margin-top: 40px;
+}
+
+.fd-section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fd-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* column header row */
+.fd-col-headers {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.4fr 2fr 1.2fr;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.fd-col-header {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 0 4px;
+}
+
+.fd-col-header:first-child { text-align: left; }
+
+/* attempt card */
+.fd-attempt-card {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.4fr 2fr 1.2fr;
+  gap: 4px;
+  margin-bottom: 5px;
+  animation: fd-slide-in 0.35s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes fd-slide-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fd-cell {
+  background: var(--surface-2);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 10px 8px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.25;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+
+.fd-cell:first-child {
+  text-align: left;
+  padding-left: 12px;
+  font-size: 0.88rem;
+}
+
+/* status variants */
+.fd-cell.correct {
+  background: rgba(46, 204, 113, 0.18);
+  border-color: rgba(46, 204, 113, 0.4);
+  color: var(--green);
+}
+
+.fd-cell.wrong {
+  background: rgba(231, 76, 60, 0.12);
+  border-color: rgba(231, 76, 60, 0.25);
+  color: #f88;
+}
+
+.fd-cell.partial {
+  background: rgba(232, 184, 75, 0.15);
+  border-color: rgba(232, 184, 75, 0.35);
+  color: var(--gold);
+}
+
+/* status dot */
+.fd-cell::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.fd-cell.correct::after  { background: var(--green); }
+.fd-cell.wrong::after    { background: var(--wrong); }
+.fd-cell.partial::after  { background: var(--gold); }
+
+/* year arrow */
+.fd-year-arrow {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.75rem;
+}
+
+/* ── WIN / LOSE BANNER ────────────────────────────────────── */
+.fd-result-banner {
+  margin-top: 36px;
+  padding: 28px 24px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--red);
+  background: var(--surface);
+  animation: fd-slide-in 0.4s ease both;
+}
+
+.fd-result-banner.win  { border-top-color: var(--green); }
+.fd-result-banner.lose { border-top-color: var(--red); }
+
+.fd-result-emoji {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+}
+
+.fd-result-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.fd-result-title.win  { color: var(--green); }
+.fd-result-title.lose { color: var(--red-bright); }
+
+.fd-result-sub {
+  color: var(--text-dim);
+  font-size: 0.92rem;
+}
+
+.fd-result-sub strong { color: var(--text); }
+
+.fd-btn-reset {
+  margin-top: 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.fd-btn-reset:hover {
+  border-color: var(--red-bright);
+  color: var(--red-bright);
+}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .fd-col-headers,
+  .fd-attempt-card {
+    grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  }
+
+  /* hide less important cols on mobile */
+  .fd-col-header:nth-child(5),
+  .fd-col-header:nth-child(6),
+  .fd-col-header:nth-child(7),
+  .fd-cell:nth-child(5),
+  .fd-cell:nth-child(6),
+  .fd-cell:nth-child(7) {
+    display: none;
+  }
+}
