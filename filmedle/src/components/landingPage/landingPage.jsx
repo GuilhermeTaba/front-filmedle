@@ -1,14 +1,13 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import './LandingPage.css'
 
 const LandingPage = () => {
+  const navigate = useNavigate()
+
   return (
     <div className="lp-root">
 
-      {/* ── Imagem de fundo ─────────────────────────────────────────────
-          Substitua a <div> por <img> quando tiver a imagem:
-          <img src="/sua-imagem.jpg" alt="" className="lp-bg" />
-      ─────────────────────────────────────────────────────────────────── */}
       <img src='/img/imagem_fundo_filmedle.jpg' className="lp-bg" />
       <div className="lp-overlay" />
 
@@ -17,30 +16,36 @@ const LandingPage = () => {
 
       <div className="lp-content">
 
-        {/* ── Logo ────────────────────────────────────────────────────── */}
+        {/* Logo */}
         <div className="lp-logo-placeholder">
           <img src="/img/filmedle.png" alt="Logo" className="lp-logo-img" />
         </div>
 
         <div className="lp-divider" />
 
-        {/* Botões verticais */}
+        {/* Botões */}
         <div className="lp-buttons">
 
-          <button className="lp-btn lp-btn-primary">
+          {/* Modo Infinito */}
+          <button
+            className="lp-btn lp-btn-primary"
+            onClick={() => navigate('/infinito')}
+          >
             <div className="lp-btn-icon">▶</div>
             <div className="lp-btn-body">
               <span className="lp-btn-title">Modo Infinito</span>
-
             </div>
             <div className="lp-btn-arrow">→</div>
           </button>
 
-          <button className="lp-btn lp-btn-secondary" onClick={() => window.location.href = '/diario'}>
+          {/* Modo Diário */}
+          <button
+            className="lp-btn lp-btn-secondary"
+            onClick={() => navigate('/diario')}
+          >
             <div className="lp-btn-icon">◈</div>
             <div className="lp-btn-body">
               <span className="lp-btn-title">Modo Diario</span>
-
             </div>
             <div className="lp-btn-arrow">→</div>
           </button>

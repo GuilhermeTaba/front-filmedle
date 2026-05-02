@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LandingPage from './components/landingPage/landingPage'
 import ModoDiario from './components/modoDiario/modoDiario'
+import ModoInfinito from './components/modoInfinito/modoInfinito'
 
 
 createRoot(document.getElementById('root')).render(
@@ -11,6 +12,7 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/" element={< LandingPage/>} />
         <Route path="/diario" element={< ModoDiario/>} />
+         <Route path="/infinito" element={< ModoInfinito/>} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
