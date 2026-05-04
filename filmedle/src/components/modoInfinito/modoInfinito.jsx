@@ -1,5 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import './ModoInfinito.css'
+
+// ─────────────────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────────────────
+
+const BASE_URL = 'http://localhost:8080' // ajuste para sua URL de produção
 
 // ─────────────────────────────────────────────────────────────────
 // MOCK DATA — substitua pela chamada real à sua API
@@ -32,25 +38,26 @@ const MOCK_MOVIES_DATA = {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// API INTEGRATION — altere apenas estas funções
+// API INTEGRATION
 // ─────────────────────────────────────────────────────────────────
 
 /**
- * Retorna um ID de filme aleatório para o modo infinito.
- * Em produção: const res = await fetch('/api/infinite/next'); const { movieId } = await res.json()
+ * Chama POST /partida/inicia para iniciar uma nova partida.
+ * Retorna ResponsePartidaDTO: { id, filme, palpites }
  */
-async function fetchRandomMovieId(excludeIds = []) {
-  await new Promise(r => setTimeout(r, 150))
-  const available = Object.keys(MOCK_MOVIES_DATA)
-    .map(Number)
-    .filter(id => !excludeIds.includes(id))
-  if (available.length === 0) return Object.keys(MOCK_MOVIES_DATA).map(Number)[0]
-  return available[Math.floor(Math.random() * available.length)]
+async function iniciaPartida() {
+  const res = await fetch(`${BASE_URL}/partida/inicia`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Erro ao iniciar partida: ${res.status}`)
+  return res.json() // ResponsePartidaDTO
 }
 
 /**
  * Busca o resultado de uma tentativa.
- * Em produção: const res = await fetch(`/api/guess?movieId=${movieId}`); return res.json()
+ * Em produção: substitua pelo endpoint real de chute.
+ * POST /partida/{idPartida}/chute/{idChute}
  */
 async function fetchGuessResult(movieId) {
   await new Promise(r => setTimeout(r, 250))
@@ -107,20 +114,23 @@ export default function ModoInfinito() {
   const bgSrc   = "/img/imagem_fundo_filmedle.jpg"
   const logoSrc = "/img/filmedle.png"
 
+  // ── partida vinda do backend
+  const [partidaId,    setPartidaId]    = useState(null)
+  const [targetId,     setTargetId]     = useState(null)  // filme.id
+  const [targetData,   setTargetData]   = useState(null)  // dados do filme alvo
+
   // ── round state
-  const [targetId,     setTargetId]     = useState(null)
-  const [targetData,   setTargetData]   = useState(null)
-  const [attempts,     setAttempts]     = useState([])   // current round attempts
+  const [attempts,     setAttempts]     = useState([])
   const [roundOver,    setRoundOver]    = useState(false)
   const [roundWon,     setRoundWon]     = useState(false)
   const [loadingRound, setLoadingRound] = useState(true)
+  const [initError,    setInitError]    = useState(false)
 
   // ── session stats
   const [streak,        setStreak]        = useState(0)
   const [bestStreak,    setBestStreak]    = useState(0)
   const [totalSolved,   setTotalSolved]   = useState(0)
   const [totalAttempts, setTotalAttempts] = useState(0)
-  const [playedIds,     setPlayedIds]     = useState([])
 
   // ── search state
   const [query,    setQuery]    = useState('')
@@ -131,29 +141,41 @@ export default function ModoInfinito() {
   const inputRef = useRef(null)
   const dropRef  = useRef(null)
 
-  // ── init first round
+  // ── inicia primeira rodada ao montar
   useEffect(() => {
-    startNewRound([])
+    startNewRound()
   }, [])
 
-  async function startNewRound(excludeIds) {
+  // ─────────────────────────────────────
+  // Inicia uma nova rodada chamando POST /partida/inicia
+  // ─────────────────────────────────────
+  async function startNewRound() {
     setLoadingRound(true)
+    setInitError(false)
     setAttempts([])
     setRoundOver(false)
     setRoundWon(false)
     setQuery('')
     setSelected(null)
+
     try {
-      const id   = await fetchRandomMovieId(excludeIds)
-      const data = MOCK_MOVIES_DATA[id]
-      setTargetId(id)
-      setTargetData(data)
+      const data = await iniciaPartida()
+      // data.filme.id → ID do filme correto
+      const filmeId = data.filme?.id
+      setPartidaId(data.id)
+      setTargetId(filmeId)
+
+      // TODO: quando Filme tiver todos os campos, substitua por: setTargetData(data.filme)
+      setTargetData(MOCK_MOVIES_DATA[filmeId] ?? null)
+    } catch (err) {
+      console.error('Erro ao iniciar rodada:', err)
+      setInitError(true)
     } finally {
       setLoadingRound(false)
     }
   }
 
-  // ── close dropdown on outside click
+  // ── fecha dropdown ao clicar fora
   useEffect(() => {
     function handle(e) {
       if (dropRef.current && !dropRef.current.contains(e.target) &&
@@ -190,11 +212,9 @@ export default function ModoInfinito() {
 
       if (selected.id === targetId) {
         const newStreak = streak + 1
-        const newSolved = totalSolved + 1
         setStreak(newStreak)
         setBestStreak(b => Math.max(b, newStreak))
-        setTotalSolved(newSolved)
-        setPlayedIds(prev => [...prev, targetId])
+        setTotalSolved(s => s + 1)
         setRoundWon(true)
         setRoundOver(true)
       }
@@ -209,13 +229,13 @@ export default function ModoInfinito() {
 
   function handleSkip() {
     setStreak(0)
-    setPlayedIds(prev => [...prev, targetId])
     setRoundOver(true)
     setRoundWon(false)
   }
 
+  // Chama um novo POST /partida/inicia para a próxima rodada
   function handleNext() {
-    startNewRound([...playedIds])
+    startNewRound()
   }
 
   // ─────────────────────────────────────
@@ -276,7 +296,18 @@ export default function ModoInfinito() {
           </div>
         </div>
 
-        {loadingRound ? (
+        {/* ── LOADING / ERROR ── */}
+        {initError ? (
+          <div style={{ color: 'red', textAlign: 'center', marginTop: '2rem' }}>
+            Erro ao conectar com o servidor.{' '}
+            <button
+              onClick={startNewRound}
+              style={{ color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : loadingRound ? (
           <div className="fi-loading">
             <span className="fi-loading-dot" />
             <span className="fi-loading-dot" />
@@ -394,8 +425,10 @@ export default function ModoInfinito() {
                 </div>
                 <div className="fi-result-sub">
                   {roundWon ? (
-                    <>O filme era <strong>{targetData?.nome}</strong> — acertou em {attempts.length} tentativa{attempts.length !== 1 ? 's' : ''}!
-                    {streak > 1 && <> Sequência: <strong style={{ color: 'var(--gold)' }}>{streak} 🔥</strong></>}</>
+                    <>
+                      O filme era <strong>{targetData?.nome}</strong> — acertou em {attempts.length} tentativa{attempts.length !== 1 ? 's' : ''}!
+                      {streak > 1 && <> Sequência: <strong style={{ color: 'var(--gold)' }}>{streak} 🔥</strong></>}
+                    </>
                   ) : (
                     <>O filme era <strong>{targetData?.nome}</strong>. Sequência perdida.</>
                   )}
@@ -417,8 +450,9 @@ export default function ModoInfinito() {
                   </div>
                 </div>
 
+                {/* Botão chama POST /partida/inicia para nova rodada */}
                 <button className="fi-btn-next" onClick={handleNext}>
-                  Próximo Filme ▶
+                  {roundWon ? 'Próximo Filme ▶' : 'Jogar Novamente ▶'}
                 </button>
               </div>
             )}

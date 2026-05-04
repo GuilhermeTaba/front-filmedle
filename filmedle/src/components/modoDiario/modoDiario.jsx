@@ -2,6 +2,12 @@ import React, { useState, useRef, useEffect } from 'react'
 import './ModoDiario.css'
 
 // ─────────────────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────────────────
+
+const BASE_URL = 'http://localhost:8080' // ajuste para sua URL de produção
+
+// ─────────────────────────────────────────────────────────────────
 // MOCK DATA — substitua pela chamada real à sua API
 // ─────────────────────────────────────────────────────────────────
 
@@ -50,16 +56,25 @@ const MOCK_MOVIES_DATA = {
   10: { nome: 'Cidade de Deus',     genero: 'Drama',    pais: 'Brasil',   ano: 2002, receita: 'US$ 30 mi',   produtora: 'O2 Filmes',   elenco: 'Haagensen, da Hora',        diretor: 'Meirelles' },
 }
 
-/** Filme do dia (mockado). Em produção, busque via API:
- *  const res = await fetch('/api/daily'); const { dailyMovieId } = await res.json()
- */
-const DAILY_MOVIE_ID = 4  // Interestelar
-
 const MAX_ATTEMPTS = 6
 
 // ─────────────────────────────────────────────────────────────────
-// API INTEGRATION HOOK — altere apenas esta função
+// API INTEGRATION
 // ─────────────────────────────────────────────────────────────────
+
+/**
+ * Chama POST /inicia para iniciar uma nova partida.
+ * Retorna o ResponsePartidaDTO: { id, filme, palpites }
+ */
+async function initGame() {
+  const res = await fetch(`${BASE_URL}/inicia`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Erro ao iniciar partida: ${res.status}`)
+  const data = await res.json() // ResponsePartidaDTO
+  return data
+}
 
 /**
  * Busca o resultado de uma tentativa na API.
@@ -67,11 +82,8 @@ const MAX_ATTEMPTS = 6
  * @returns {Promise<Object>} - objeto com os atributos do filme
  *
  * Para integrar com sua API, substitua o corpo desta função por:
- *   const res = await fetch(`/api/guess?movieId=${movieId}&daily=${DAILY_MOVIE_ID}`)
+ *   const res = await fetch(`/api/guess?movieId=${movieId}&daily=${dailyMovieId}`)
  *   return res.json()
- *
- * A API deve retornar o objeto do filme com os atributos:
- * { nome, genero, pais, ano, receita, produtora, elenco, diretor }
  */
 async function fetchGuessResult(movieId) {
   // MOCK: simula latência de rede
@@ -85,24 +97,22 @@ async function fetchGuessResult(movieId) {
 // HELPERS
 // ─────────────────────────────────────────────────────────────────
 
-const TARGET = MOCK_MOVIES_DATA[DAILY_MOVIE_ID]
-
-function compareCell(field, value) {
-  const target = TARGET[field]
-  if (value === target) return 'correct'
+function compareCell(field, value, target) {
+  const targetVal = target[field]
+  if (value === targetVal) return 'correct'
   if (field === 'ano') {
-    return Math.abs(value - target) <= 5 ? 'partial' : 'wrong'
+    return Math.abs(value - targetVal) <= 5 ? 'partial' : 'wrong'
   }
-  if (typeof value === 'string' && typeof target === 'string') {
-    const v = value.toLowerCase(), t = target.toLowerCase()
+  if (typeof value === 'string' && typeof targetVal === 'string') {
+    const v = value.toLowerCase(), t = targetVal.toLowerCase()
     if (v.includes(t) || t.includes(v)) return 'partial'
   }
   return 'wrong'
 }
 
-function yearArrow(guessedYear) {
-  if (guessedYear === TARGET.ano) return ''
-  return guessedYear < TARGET.ano ? ' ↑' : ' ↓'
+function yearArrow(guessedYear, targetYear) {
+  if (guessedYear === targetYear) return ''
+  return guessedYear < targetYear ? ' ↑' : ' ↓'
 }
 
 const COLUMNS = [
@@ -120,28 +130,47 @@ const COLUMNS = [
 // COMPONENT
 // ─────────────────────────────────────────────────────────────────
 
-/**
- * Props:
- *  bgSrc   — caminho da imagem de fundo  (ex: "/img/imagem_fundo_filmedle.jpg")
- *  logoSrc — caminho da logo              (ex: "/img/filmedle.png")
- *
- * Se não passar nenhuma das duas, o componente usa fundo escuro sólido
- * e exibe o texto "FILMEDLE" como fallback.
- */
-
-
 export default function ModoDiario() {
-  const [query, setQuery]         = useState('')
-  const [selected, setSelected]   = useState(null)   // { id, nome }
-  const [showDrop, setShowDrop]   = useState(false)
-  const [attempts, setAttempts]   = useState([])     // array of movie objects
-  const [loading, setLoading]     = useState(false)
-  const [gameOver, setGameOver]   = useState(false)  // true when won or lost
-  const [won, setWon]             = useState(false)
+  const [query, setQuery]           = useState('')
+  const [selected, setSelected]     = useState(null)   // { id, nome }
+  const [showDrop, setShowDrop]     = useState(false)
+  const [attempts, setAttempts]     = useState([])     // array of movie objects
+  const [loading, setLoading]       = useState(false)
+  const [gameOver, setGameOver]     = useState(false)
+  const [won, setWon]               = useState(false)
+
+  // ── Estado da partida vindo do backend ──
+  const [dailyMovieId, setDailyMovieId] = useState(null)  // filme.id do ResponsePartidaDTO
+  const [partidaId, setPartidaId]       = useState(null)  // id da partida
+  const [target, setTarget]             = useState(null)  // dados do filme alvo (mock por enquanto)
+  const [initError, setInitError]       = useState(false)
+
   const inputRef = useRef(null)
   const dropRef  = useRef(null)
-  const bgSrc = "/img/imagem_fundo_filmedle.jpg"
+
+  const bgSrc   = "/img/imagem_fundo_filmedle.jpg"
   const logoSrc = "/img/filmedle.png"
+
+  // ── Inicia partida ao montar o componente ──
+  useEffect(() => {
+    async function start() {
+      try {
+        const data = await initGame()
+        // data.filme.id → ID do filme correto (campo "id" do objeto Filme)
+        const filmeId = data.filme?.id
+        setDailyMovieId(filmeId)
+        setPartidaId(data.id)
+
+        // TODO: quando seu objeto Filme tiver todos os campos de comparação,
+        // substitua a linha abaixo por: setTarget(data.filme)
+        setTarget(MOCK_MOVIES_DATA[filmeId] ?? null)
+      } catch (err) {
+        console.error('Falha ao iniciar partida:', err)
+        setInitError(true)
+      }
+    }
+    start()
+  }, [])
 
   const guessedIds = attempts.map(a => a._movieId)
 
@@ -150,7 +179,7 @@ export default function ModoDiario() {
     !guessedIds.includes(m.id)
   )
 
-  // close dropdown on outside click
+  // Fecha dropdown ao clicar fora
   useEffect(() => {
     function handle(e) {
       if (dropRef.current && !dropRef.current.contains(e.target) &&
@@ -169,7 +198,7 @@ export default function ModoDiario() {
   }
 
   async function handleGuess() {
-    if (!selected || loading || gameOver) return
+    if (!selected || loading || gameOver || !dailyMovieId) return
     setLoading(true)
     try {
       const result = await fetchGuessResult(selected.id)
@@ -177,7 +206,7 @@ export default function ModoDiario() {
       const newAttempts = [enriched, ...attempts]
       setAttempts(newAttempts)
 
-      if (selected.id === DAILY_MOVIE_ID) {
+      if (selected.id === dailyMovieId) {
         setWon(true)
         setGameOver(true)
       } else if (newAttempts.length >= MAX_ATTEMPTS) {
@@ -192,12 +221,28 @@ export default function ModoDiario() {
     }
   }
 
-  function handleReset() {
+  async function handleReset() {
     setAttempts([])
     setSelected(null)
     setQuery('')
     setGameOver(false)
     setWon(false)
+    setDailyMovieId(null)
+    setPartidaId(null)
+    setTarget(null)
+    setInitError(false)
+
+    // Reinicia uma nova partida no backend
+    try {
+      const data = await initGame()
+      const filmeId = data.filme?.id
+      setDailyMovieId(filmeId)
+      setPartidaId(data.id)
+      setTarget(MOCK_MOVIES_DATA[filmeId] ?? null)
+    } catch (err) {
+      console.error('Falha ao reiniciar partida:', err)
+      setInitError(true)
+    }
   }
 
   const remainingAttempts = MAX_ATTEMPTS - attempts.length
@@ -235,6 +280,26 @@ export default function ModoDiario() {
         <div className="fd-attempts-counter">
           Tentativas restantes: <span>{Math.max(0, remainingAttempts)}</span> / {MAX_ATTEMPTS}
         </div>
+
+        {/* ── ERROR / LOADING inline ── */}
+        {initError ? (
+          <div style={{ color: 'red', textAlign: 'center', marginTop: '2rem' }}>
+            Erro ao conectar com o servidor.{' '}
+            <button
+              onClick={handleReset}
+              style={{ color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : (!dailyMovieId || !target) ? (
+          <div className="fi-loading">
+            <span className="fi-loading-dot" />
+            <span className="fi-loading-dot" />
+            <span className="fi-loading-dot" />
+          </div>
+        ) : (
+          <>
 
         {/* ── SEARCH ── */}
         {!gameOver && (
@@ -313,11 +378,11 @@ export default function ModoDiario() {
               >
                 {COLUMNS.map(col => {
                   const status = col.key === 'nome'
-                    ? (attempt._movieId === DAILY_MOVIE_ID ? 'correct' : 'wrong')
-                    : compareCell(col.key, attempt[col.key])
+                    ? (attempt._movieId === dailyMovieId ? 'correct' : 'wrong')
+                    : compareCell(col.key, attempt[col.key], target)
 
                   const displayVal = col.key === 'ano'
-                    ? `${attempt[col.key]}${yearArrow(attempt[col.key])}`
+                    ? `${attempt[col.key]}${yearArrow(attempt[col.key], target.ano)}`
                     : attempt[col.key]
 
                   return (
@@ -340,14 +405,17 @@ export default function ModoDiario() {
             </div>
             <div className="fd-result-sub">
               {won
-                ? <>O filme era <strong>{TARGET.nome}</strong> — acertou em {attempts.length} tentativa{attempts.length !== 1 ? 's' : ''}!</>
-                : <>O filme era <strong>{TARGET.nome}</strong>. Tente novamente amanhã!</>
+                ? <>O filme era <strong>{target.nome}</strong> — acertou em {attempts.length} tentativa{attempts.length !== 1 ? 's' : ''}!</>
+                : <>O filme era <strong>{target.nome}</strong>. Tente novamente amanhã!</>
               }
             </div>
             <button className="fd-btn-reset" onClick={handleReset}>
               Jogar Novamente (Dev)
             </button>
           </div>
+        )}
+
+          </>
         )}
 
       </div>

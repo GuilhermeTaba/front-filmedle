@@ -1,9 +1,14 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import './LandingPage.css'
+import axios from 'axios'
+
+const apiUrl = import.meta.env.VITE_API_URL
 
 const LandingPage = () => {
   const navigate = useNavigate()
+
+
 
   return (
     <div className="lp-root">
@@ -42,6 +47,7 @@ const LandingPage = () => {
           <button
             className="lp-btn lp-btn-secondary"
             onClick={() => navigate('/diario')}
+
           >
             <div className="lp-btn-icon">◈</div>
             <div className="lp-btn-body">
