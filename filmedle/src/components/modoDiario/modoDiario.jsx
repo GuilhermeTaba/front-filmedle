@@ -14,18 +14,11 @@ const BASE_URL = 'http://localhost:8080' // ajuste para sua URL de produção
 /** Lista de filmes disponíveis para busca.
  *  Substitua por: const res = await fetch('/api/movies'); const MOVIES = await res.json()
  */
-const MOVIES_LIST = [
-  { id: 1,  nome: 'O Poderoso Chefão' },
-  { id: 2,  nome: 'Pulp Fiction' },
-  { id: 3,  nome: 'Matrix' },
-  { id: 4,  nome: 'Interestelar' },
-  { id: 5,  nome: 'Clube da Luta' },
-  { id: 6,  nome: 'Vingadores: Ultimato' },
-  { id: 7,  nome: 'Parasita' },
-  { id: 8,  nome: 'Coringa' },
-  { id: 9,  nome: 'O Senhor dos Anéis: O Retorno do Rei' },
-  { id: 10, nome: 'Cidade de Deus' },
-]
+async function fetchMoviesList() {
+  const res = await fetch(`${BASE_URL}/filme/buscar`)
+  if (!res.ok) throw new Error(`Erro ao buscar filmes: ${res.status}`)
+  return res.json() // retorna [{ id, nome }, ...]
+}
 
 /** Objeto de resposta que virá da sua API ao tentar um filme.
  *
@@ -67,7 +60,8 @@ const MAX_ATTEMPTS = 6
  * Retorna o ResponsePartidaDTO: { id, filme, palpites }
  */
 async function initGame() {
-  const res = await fetch(`${BASE_URL}/inicia`, {
+  const res = await fetch(`${BASE_URL}/partida
+    /inicia`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   })
@@ -150,31 +144,34 @@ export default function ModoDiario() {
 
   const bgSrc   = "/img/imagem_fundo_filmedle.jpg"
   const logoSrc = "/img/filmedle.png"
+const [moviesList, setMoviesList] = useState([])
 
-  // ── Inicia partida ao montar o componente ──
-  useEffect(() => {
-    async function start() {
-      try {
-        const data = await initGame()
-        // data.filme.id → ID do filme correto (campo "id" do objeto Filme)
-        const filmeId = data.filme?.id
-        setDailyMovieId(filmeId)
-        setPartidaId(data.id)
+useEffect(() => {
+  async function start() {
+    try {
+      // Busca lista de filmes E inicia partida em paralelo
+      const [lista, data] = await Promise.all([
+        fetchMoviesList(),
+        initGame()
+      ])
 
-        // TODO: quando seu objeto Filme tiver todos os campos de comparação,
-        // substitua a linha abaixo por: setTarget(data.filme)
-        setTarget(MOCK_MOVIES_DATA[filmeId] ?? null)
-      } catch (err) {
-        console.error('Falha ao iniciar partida:', err)
-        setInitError(true)
-      }
+      setMoviesList(lista)
+
+      const filmeId = data.filme?.id
+      setDailyMovieId(filmeId)
+      setPartidaId(data.id)
+      setTarget(MOCK_MOVIES_DATA[filmeId] ?? null)
+    } catch (err) {
+      console.error('Falha ao iniciar:', err)
+      setInitError(true)
     }
-    start()
-  }, [])
+  }
+  start()
+}, [])
 
   const guessedIds = attempts.map(a => a._movieId)
 
-  const filtered = MOVIES_LIST.filter(m =>
+const filtered = moviesList.filter(m =>
     m.nome.toLowerCase().includes(query.toLowerCase()) &&
     !guessedIds.includes(m.id)
   )
@@ -220,30 +217,24 @@ export default function ModoDiario() {
       setQuery('')
     }
   }
+async function handleReset() {
+  // ... seu reset de estados ...
 
-  async function handleReset() {
-    setAttempts([])
-    setSelected(null)
-    setQuery('')
-    setGameOver(false)
-    setWon(false)
-    setDailyMovieId(null)
-    setPartidaId(null)
-    setTarget(null)
-    setInitError(false)
-
-    // Reinicia uma nova partida no backend
-    try {
-      const data = await initGame()
-      const filmeId = data.filme?.id
-      setDailyMovieId(filmeId)
-      setPartidaId(data.id)
-      setTarget(MOCK_MOVIES_DATA[filmeId] ?? null)
-    } catch (err) {
-      console.error('Falha ao reiniciar partida:', err)
-      setInitError(true)
-    }
+  try {
+    const [lista, data] = await Promise.all([
+      fetchMoviesList(),
+      initGame()
+    ])
+    setMoviesList(lista)
+    const filmeId = data.filme?.id
+    setDailyMovieId(filmeId)
+    setPartidaId(data.id)
+    setTarget(MOCK_MOVIES_DATA[filmeId] ?? null)
+  } catch (err) {
+    console.error('Falha ao reiniciar:', err)
+    setInitError(true)
   }
+}
 
   const remainingAttempts = MAX_ATTEMPTS - attempts.length
 
