@@ -7,7 +7,7 @@ const BASE_URL = 'http://localhost:8080'
 // API
 // ─────────────────────────────────────────────────────────────────
 async function buscarFilmes() {
-  const res = await fetch(`${BASE_URL}/filme/buscar`, {
+  const res = await fetch(`${BASE_URL}/filme/filtro`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   })
@@ -18,7 +18,7 @@ async function buscarFilmes() {
 }
 
 async function iniciaPartida() {
-  const res = await fetch(`${BASE_URL}/partida/inicia`, {
+  const res = await fetch(`${BASE_URL}/partida/inicia?modo=infinito`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   })
@@ -46,11 +46,18 @@ async function buscarDicaAPI(partidaId) {
   return res.json()
 }
 
+async function desistirPartida(partidaId) {
+  const res = await fetch(`${BASE_URL}/partida/${partidaId}/desistir`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Erro ao desistir: ${res.status}`)
+  return res.json()
+}
+
 // ─────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────
-
-// Status do backend → classe CSS
 function statusToClass(status) {
   switch (String(status ?? '').toUpperCase()) {
     case 'CORRETO':    return 'correct'
@@ -61,7 +68,6 @@ function statusToClass(status) {
   }
 }
 
-// Seta de direção para o campo ano
 function seta(status) {
   switch (String(status ?? '').toUpperCase()) {
     case 'SETA_CIMA':  return ' ↑'
@@ -70,7 +76,6 @@ function seta(status) {
   }
 }
 
-// Formata arrays e objetos do filme para texto legível
 function fmt(value) {
   if (Array.isArray(value))
     return value.map(v => (typeof v === 'object' ? v.nome ?? '' : String(v))).filter(Boolean).join(', ')
@@ -78,7 +83,38 @@ function fmt(value) {
   return String(value)
 }
 
-// Verifica acerto: todos os campos de status = CORRETO
+// Renderiza lista de países como bandeiras com tooltip
+function PaisesFlags({ paises }) {
+  if (!Array.isArray(paises) || paises.length === 0) return <span>—</span>
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
+      {paises.map((p, i) => {
+        const nome     = typeof p === 'object' ? (p.nome ?? '') : String(p)
+        const bandeira = typeof p === 'object' ? (p.bandeira ?? null) : null
+        if (bandeira) {
+          return (
+            <img
+              key={i}
+              src={bandeira}
+              alt={nome}
+              title={nome}
+              style={{
+                width: '28px',
+                height: '20px',
+                objectFit: 'cover',
+                borderRadius: '3px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
+                cursor: 'default',
+              }}
+            />
+          )
+        }
+        return <span key={i}>{nome}</span>
+      })}
+    </div>
+  )
+}
+
 function palpiteAcertou(p) {
   return ['diretor', 'elenco', 'genero', 'lancamento', 'paises', 'produtora', 'receita']
     .every(c => String(p[c] ?? '').toUpperCase() === 'CORRETO')
@@ -98,8 +134,6 @@ function getStreakEmoji(streak) {
 
 // ─────────────────────────────────────────────────────────────────
 // COLUNAS
-// filmeKey  = campo dentro de palpite.filme
-// statusKey = campo de status direto no palpite (null = coluna nome)
 // ─────────────────────────────────────────────────────────────────
 const COLUMNS = [
   { label: 'Filme',     filmeKey: 'nome',       statusKey: null          },
@@ -122,7 +156,7 @@ export default function ModoInfinito() {
   const [moviesList,   setMoviesList]   = useState([])
   const [partidaId,    setPartidaId]    = useState(null)
   const [nomeAlvo,     setNomeAlvo]     = useState(null)
-  const [palpites,     setPalpites]     = useState([])   // array direto do backend, invertido
+  const [palpites,     setPalpites]     = useState([])
   const [roundOver,    setRoundOver]    = useState(false)
   const [roundWon,     setRoundWon]     = useState(false)
   const [loadingRound, setLoadingRound] = useState(true)
@@ -142,6 +176,10 @@ export default function ModoInfinito() {
   const [loadingDica,  setLoadingDica]  = useState(false)
   const [dicaError,    setDicaError]    = useState('')
   const [dicaCooldown, setDicaCooldown] = useState(0)
+
+  // Estado de desistência
+  const [desistindo,   setDesistindo]   = useState(false)
+  const [filmeRevelado, setFilmeRevelado] = useState(null)
 
   const inputRef = useRef(null)
   const dropRef  = useRef(null)
@@ -163,6 +201,8 @@ export default function ModoInfinito() {
     setShowDrop(false)
     setDica([])
     setDicaError('')
+    setDesistindo(false)
+    setFilmeRevelado(null)
 
     try {
       const data = await iniciaPartida()
@@ -205,14 +245,12 @@ export default function ModoInfinito() {
 
     try {
       const response = await enviarChute(partidaId, selected.id)
-      console.log('response:', response)  // ←
-      // response = { id: 95, palpites: [ { diretor: "ERRADO", elenco: "PARCIAL", filme: {...}, ... } ] }
+      console.log('response:', response)
 
       const novosPalpites = response?.palpites ?? []
-      setPalpites([...novosPalpites].reverse()) // mais recente primeiro
+      setPalpites([...novosPalpites].reverse())
       setTotalAttempts(t => t + 1)
 
-      // Acerto = último palpite enviado tem todos os campos CORRETO
       const ultimo = novosPalpites[novosPalpites.length - 1]
       if (ultimo && palpiteAcertou(ultimo)) {
         const newStreak = streak + 1
@@ -232,11 +270,26 @@ export default function ModoInfinito() {
     }
   }
 
-  function handleSkip() {
-    setStreak(0)
-    setRoundOver(true)
-    setRoundWon(false)
-    if (palpites.length > 0) setNomeAlvo(palpites[0]?.filme?.nome ?? null)
+  async function handleDesistir() {
+    if (loading || desistindo || roundOver || !partidaId) return
+    setDesistindo(true)
+
+    try {
+      const filmeData = await desistirPartida(partidaId)
+      // filmeData = ResponseFilmeDTO retornado pelo backend
+      const nomeFilme = filmeData?.nome ?? filmeData?.title ?? filmeData?.titulo ?? 'desconhecido'
+      setFilmeRevelado(filmeData)
+      setNomeAlvo(nomeFilme)
+      setStreak(0)
+      setRoundOver(true)
+      setRoundWon(false)
+    } catch (err) {
+      console.error('Erro ao desistir:', err)
+      // Mesmo com erro, encerra a rodada localmente
+      setStreak(0)
+      setRoundOver(true)
+      setRoundWon(false)
+    }
   }
 
   async function handleDica() {
@@ -261,11 +314,9 @@ export default function ModoInfinito() {
     startNewRound()
   }
 
-  // ─── Renderiza uma célula lendo o status direto do backend ─────
   function renderCell(col, palpite) {
     const filme = palpite.filme ?? {}
 
-    // Coluna "nome": não tem status de comparação, sempre exibe normal
     if (col.statusKey === null) {
       return (
         <div key={col.label} className="fi-cell wrong">
@@ -274,10 +325,22 @@ export default function ModoInfinito() {
       )
     }
 
-    const status   = palpite[col.statusKey]   // "ERRADO" | "PARCIAL" | "CORRETO" | "SETA_CIMA" | "SETA_BAIXO"
+    const status   = palpite[col.statusKey]
     const cssClass = statusToClass(status)
-    const valor    = fmt(filme[col.filmeKey])
-    const display  = col.filmeKey === 'lancamento' ? `${valor}${seta(status)}` : valor
+
+    // Países → bandeiras com tooltip
+    if (col.filmeKey === 'paises') {
+      return (
+        <div key={col.label} className={`fi-cell ${cssClass}`}>
+          <PaisesFlags paises={filme.paises} />
+        </div>
+      )
+    }
+
+    // Ano e Receita → mostram seta de direção
+    const comSeta = col.filmeKey === 'lancamento' || col.filmeKey === 'receita'
+    const valor   = fmt(filme[col.filmeKey])
+    const display = comSeta ? `${valor}${seta(status)}` : valor
 
     return (
       <div key={col.label} className={`fi-cell ${cssClass}`}>
@@ -365,6 +428,7 @@ export default function ModoInfinito() {
           </div>
         ) : (
           <>
+            {/* Área de input: some quando desistiu ou rodada acabou */}
             {!roundOver && (
               <>
                 <div className="fi-search-wrapper">
@@ -377,10 +441,11 @@ export default function ModoInfinito() {
                     onChange={e => { setQuery(e.target.value); setSelected(null); setShowDrop(true) }}
                     onFocus={() => setShowDrop(true)}
                     autoComplete="off"
+                    disabled={desistindo}
                   />
                   <span className="fi-search-icon">⌕</span>
 
-                  {showDrop && query.length > 0 && (
+                  {showDrop && query.length > 0 && !desistindo && (
                     <div className="fi-dropdown" ref={dropRef}>
                       {filtered.length === 0
                         ? <div className="fi-dropdown-empty">Nenhum filme encontrado</div>
@@ -395,24 +460,41 @@ export default function ModoInfinito() {
                   )}
                 </div>
 
-                <div className="fi-action-row">
-                  <button className="fi-btn-guess" onClick={handleGuess} disabled={!selected || loading}>
-                    {loading ? 'Verificando...' : <><span>▶</span> Confirmar <span className="fi-btn-arrow">→</span></>}
-                  </button>
+                {/* Botões: somem ao desistir */}
+                {!desistindo && (
+                  <div className="fi-action-row">
+                    <button className="fi-btn-guess" onClick={handleGuess} disabled={!selected || loading}>
+                      {loading ? 'Verificando...' : <><span>▶</span> Confirmar <span className="fi-btn-arrow">→</span></>}
+                    </button>
 
-                  <button className="fi-btn-skip" onClick={handleSkip} disabled={loading} title="Pular este filme (perde a sequência)">
-                    Pular ⟶
-                  </button>
+                    <button
+                      className="fi-btn-skip"
+                      onClick={handleDesistir}
+                      disabled={loading}
+                      title="Desistir desta rodada (perde a sequência)"
+                    >
+                      Desistir ✕
+                    </button>
 
-                  <button
-                    className="fi-btn-skip"
-                    onClick={handleDica}
-                    disabled={loading || loadingDica || palpites.length < 5 || dicaCooldown > 0}
-                    title={dicaCooldown > 0 ? `A próxima dica libera em ${dicaCooldown} filme(s)` : 'Liberada após 5 palpites'}
-                  >
-                    {loadingDica ? 'Buscando...' : dicaCooldown > 0 ? `💡 Dica (${dicaCooldown})` : '💡 Dica'}
-                  </button>
-                </div>
+                    <button
+                      className="fi-btn-skip"
+                      onClick={handleDica}
+                      disabled={loading || loadingDica || palpites.length < 5 || dicaCooldown > 0}
+                      title={dicaCooldown > 0 ? `A próxima dica libera em ${dicaCooldown} filme(s)` : 'Liberada após 5 palpites'}
+                    >
+                      {loadingDica ? 'Buscando...' : dicaCooldown > 0 ? `💡 Dica (${dicaCooldown})` : '💡 Dica'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Spinner de desistência enquanto aguarda resposta da API */}
+                {desistindo && !roundOver && (
+                  <div className="fi-loading" style={{ marginTop: '1rem' }}>
+                    <span className="fi-loading-dot" />
+                    <span className="fi-loading-dot" />
+                    <span className="fi-loading-dot" />
+                  </div>
+                )}
               </>
             )}
 
@@ -434,9 +516,9 @@ export default function ModoInfinito() {
 
             {roundOver && (
               <div className={`fi-result-banner ${roundWon ? 'win' : 'skip'}`}>
-                <div className="fi-result-emoji">{roundWon ? getStreakEmoji(streak) : '⏭️'}</div>
+                <div className="fi-result-emoji">{roundWon ? getStreakEmoji(streak) : '🏳️'}</div>
                 <div className={`fi-result-title ${roundWon ? 'win' : 'skip'}`}>
-                  {roundWon ? 'Acertou!' : 'Filme Pulado'}
+                  {roundWon ? 'Acertou!' : 'Você Desistiu'}
                 </div>
                 <div className="fi-result-sub">
                   {roundWon ? (
