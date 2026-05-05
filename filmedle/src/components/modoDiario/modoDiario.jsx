@@ -84,7 +84,7 @@ function fmtReceita(value) {
 }
 
 function palpiteAcertou(p) {
-  return ['diretor', 'elenco', 'genero', 'lancamento', 'paises', 'produtora', 'receita']
+  return ['diretor', 'elenco', 'genero', 'lancamento', 'pais', 'produtora', 'receita']
     .every(c => String(p[c] ?? '').toUpperCase() === 'CORRETO')
 }
 
@@ -97,7 +97,7 @@ const MAX_ATTEMPTS = 6
 const COLUMNS = [
   { label: 'Filme',     filmeKey: 'nome',      statusKey: null         },
   { label: 'Gênero',    filmeKey: 'genero',    statusKey: 'genero'     },
-  { label: 'País',      filmeKey: 'paises',    statusKey: 'paises'     },
+  { label: 'País',      filmeKey: 'paises',  statusKey: 'pais'     },
   { label: 'Ano',       filmeKey: 'lancamento',statusKey: 'lancamento' },
   { label: 'Receita',   filmeKey: 'receita',   statusKey: 'receita'    },
   { label: 'Produtora', filmeKey: 'produtora', statusKey: 'produtora'  },
@@ -115,7 +115,9 @@ function PaisesFlags({ paises }) {
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
       {paises.map((p, i) => {
         const nome     = typeof p === 'object' ? (p.nome ?? '') : String(p)
-        const bandeira = typeof p === 'object' ? (p.bandeira ?? null) : null
+        const bandeira = typeof p === 'object'
+          ? (p.bandeira ?? p.urlBandeira ?? p.flagUrl ?? p.flag_url ?? p.url ?? null)
+          : null
         if (bandeira) {
           return (
             <img
@@ -123,11 +125,12 @@ function PaisesFlags({ paises }) {
               src={bandeira}
               alt={nome}
               title={nome}
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
               style={{ width: '26px', height: '18px', objectFit: 'cover', borderRadius: '2px', boxShadow: '0 1px 3px rgba(0,0,0,0.5)', cursor: 'default' }}
             />
           )
         }
-        return <span key={i}>{nome}</span>
+        return <span key={i} title={nome}>{nome}</span>
       })}
     </div>
   )
@@ -239,7 +242,7 @@ export default function ModoDiario() {
         _reveal: true,
         filme: filme ?? {},
         genero: 'CORRETO',
-        paises: 'CORRETO',
+        pais: 'CORRETO',
         lancamento: 'CORRETO',
         receita: 'CORRETO',
         produtora: 'CORRETO',
@@ -273,7 +276,7 @@ export default function ModoDiario() {
     const filme = palpite.filme ?? {}
     if (col.statusKey === null) {
       return (
-        <div key={col.label} className={`fd-cell ${palpite._reveal ? 'correct' : 'wrong'}`}>
+        <div key={col.label} className={`fd-cell ${(palpiteAcertou(palpite) || palpite._reveal) ? 'correct' : 'wrong'}`}>
           {fmt(filme[col.filmeKey])}
         </div>
       )

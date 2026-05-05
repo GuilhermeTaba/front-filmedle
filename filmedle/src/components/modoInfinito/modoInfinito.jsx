@@ -98,7 +98,9 @@ function PaisesFlags({ paises }) {
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
       {paises.map((p, i) => {
         const nome     = typeof p === 'object' ? (p.nome ?? '') : String(p)
-        const bandeira = typeof p === 'object' ? (p.bandeira ?? null) : null
+        const bandeira = typeof p === 'object'
+          ? (p.bandeira ?? p.urlBandeira ?? p.flagUrl ?? p.flag_url ?? p.url ?? null)
+          : null
         if (bandeira) {
           return (
             <img
@@ -106,6 +108,7 @@ function PaisesFlags({ paises }) {
               src={bandeira}
               alt={nome}
               title={nome}
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
               style={{
                 width: '28px',
                 height: '20px',
@@ -117,14 +120,14 @@ function PaisesFlags({ paises }) {
             />
           )
         }
-        return <span key={i}>{nome}</span>
+        return <span key={i} title={nome}>{nome}</span>
       })}
     </div>
   )
 }
 
 function palpiteAcertou(p) {
-  return ['diretor', 'elenco', 'genero', 'lancamento', 'paises', 'produtora', 'receita']
+  return ['diretor', 'elenco', 'genero', 'lancamento', 'pais', 'produtora', 'receita']
     .every(c => String(p[c] ?? '').toUpperCase() === 'CORRETO')
 }
 
@@ -146,7 +149,7 @@ function getStreakEmoji(streak) {
 const COLUMNS = [
   { label: 'Filme',     filmeKey: 'nome',       statusKey: null          },
   { label: 'Gênero',    filmeKey: 'genero',      statusKey: 'genero'      },
-  { label: 'País',      filmeKey: 'paises',      statusKey: 'paises'      },
+  { label: 'País',      filmeKey: 'paises',      statusKey: 'pais'        },
   { label: 'Ano',       filmeKey: 'lancamento',  statusKey: 'lancamento'  },
   { label: 'Receita',   filmeKey: 'receita',     statusKey: 'receita'     },
   { label: 'Produtora', filmeKey: 'produtora',   statusKey: 'produtora'   },
@@ -179,9 +182,9 @@ export default function ModoInfinito() {
   const [loading,  setLoading]  = useState(false)
 
   const [dica,         setDica]         = useState([])
+  const [dicaMostrada, setDicaMostrada] = useState(false)
   const [loadingDica,  setLoadingDica]  = useState(false)
   const [dicaError,    setDicaError]    = useState('')
-  const [dicaCooldown, setDicaCooldown] = useState(0)
 
   // Estado de desistência
   const [desistindo,   setDesistindo]   = useState(false)
@@ -206,6 +209,7 @@ export default function ModoInfinito() {
     setSelected(null)
     setShowDrop(false)
     setDica([])
+    setDicaMostrada(false)
     setDicaError('')
     setDesistindo(false)
     setFilmeRevelado(null)
@@ -287,7 +291,7 @@ export default function ModoInfinito() {
         _reveal: true,
         filme: filmeData ?? {},
         genero: 'CORRETO',
-        paises: 'CORRETO',
+        pais: 'CORRETO',
         lancamento: 'CORRETO',
         receita: 'CORRETO',
         produtora: 'CORRETO',
@@ -308,14 +312,14 @@ export default function ModoInfinito() {
   }
 
   async function handleDica() {
-    if (loadingDica || dicaCooldown > 0 || !partidaId) return
+    if (loadingDica || !partidaId || palpites.length < 5) return
 
     setLoadingDica(true)
     setDicaError('')
     try {
       const data = await buscarDicaAPI(partidaId)
       setDica(Array.isArray(data) ? data : [])
-      setDicaCooldown(5)
+      setDicaMostrada(true)
     } catch {
       setDicaError('Não foi possível carregar a dica.')
     } finally {
@@ -324,7 +328,6 @@ export default function ModoInfinito() {
   }
 
   function handleNext() {
-    setDicaCooldown(prev => Math.max(0, prev - 1))
     startNewRound()
   }
 
@@ -333,7 +336,7 @@ export default function ModoInfinito() {
 
     if (col.statusKey === null) {
       return (
-        <div key={col.label} className={`fi-cell ${palpite._reveal ? 'correct' : 'wrong'}`}>
+        <div key={col.label} className={`fi-cell ${(palpiteAcertou(palpite) || palpite._reveal) ? 'correct' : 'wrong'}`}>
           {fmt(filme[col.filmeKey])}
         </div>
       )
@@ -457,14 +460,17 @@ export default function ModoInfinito() {
                           Desistir ✕
                         </button>
 
-                        <button
-                          className="fi-btn-skip"
-                          onClick={handleDica}
-                          disabled={loading || loadingDica || dicaCooldown > 0}
-                          title={dicaCooldown > 0 ? `A próxima dica libera em ${dicaCooldown} filme(s)` : 'Dica'}
-                        >
-                          {loadingDica ? 'Buscando...' : dicaCooldown > 0 ? `💡 Dica (${dicaCooldown})` : '💡 Dica'}
-                        </button>
+                        {!roundOver && palpites.length >= 5 && !dicaMostrada && (
+                          <button className="fi-btn-skip" onClick={handleDica} disabled={loadingDica}>
+                            {loadingDica ? 'Buscando...' : '💡 Dica'}
+                          </button>
+                        )}
+
+                        {!dicaMostrada && palpites.length < 5 && (
+                          <button className="fi-btn-skip" disabled title="Disponível após 5 tentativas">
+                            💡 Dica ({5 - palpites.length} tent. para liberar)
+                          </button>
+                        )}
                       </>
                     )}
                   </div>
