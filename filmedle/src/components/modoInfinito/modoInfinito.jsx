@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import './ModoInfinito.css'
 import CinemaBackground from '../cinemaBackground/CinemaBackground'
 
-const BASE_URL = 'http://localhost:8080'
+const BASE_URL = '/api'
 
 // ─────────────────────────────────────────────────────────────────
 // API
