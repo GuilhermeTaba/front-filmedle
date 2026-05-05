@@ -309,7 +309,6 @@ export default function ModoInfinito() {
 
   async function handleDica() {
     if (loadingDica || dicaCooldown > 0 || !partidaId) return
-    if (palpites.length < 5) { setDicaError('A dica só fica disponível com 5 palpites.'); return }
 
     setLoadingDica(true)
     setDicaError('')
@@ -381,23 +380,6 @@ export default function ModoInfinito() {
           <span className="fi-mode-tag">Modo Infinito</span>
         </header>
 
-        <div className="fi-stats-bar">
-          <div className="fi-stat">
-            <span className="fi-stat-value">{getStreakEmoji(streak)} {streak}</span>
-            <span className="fi-stat-label">Sequência</span>
-          </div>
-          <div className="fi-stat-divider" />
-          <div className="fi-stat">
-            <span className="fi-stat-value">{totalSolved}</span>
-            <span className="fi-stat-label">Acertos</span>
-          </div>
-          <div className="fi-stat-divider" />
-          <div className="fi-stat">
-            <span className="fi-stat-value">{totalAttempts}</span>
-            <span className="fi-stat-label">Tentativas</span>
-          </div>
-        </div>
-
         {dicaError && (
           <div style={{ color: 'var(--gold)', textAlign: 'center', marginTop: '1rem' }}>
             {dicaError}
@@ -464,23 +446,27 @@ export default function ModoInfinito() {
                       {loading ? 'Verificando...' : <><span>▶</span> Confirmar <span className="fi-btn-arrow">→</span></>}
                     </button>
 
-                    <button
-                      className="fi-btn-skip"
-                      onClick={handleDesistir}
-                      disabled={loading}
-                      title="Desistir desta rodada (perde a sequência)"
-                    >
-                      Desistir ✕
-                    </button>
+                    {palpites.length >= 1 && (
+                      <>
+                        <button
+                          className="fi-btn-skip"
+                          onClick={handleDesistir}
+                          disabled={loading}
+                          title="Desistir desta rodada (perde a sequência)"
+                        >
+                          Desistir ✕
+                        </button>
 
-                    <button
-                      className="fi-btn-skip"
-                      onClick={handleDica}
-                      disabled={loading || loadingDica || palpites.length < 5 || dicaCooldown > 0}
-                      title={dicaCooldown > 0 ? `A próxima dica libera em ${dicaCooldown} filme(s)` : 'Liberada após 5 palpites'}
-                    >
-                      {loadingDica ? 'Buscando...' : dicaCooldown > 0 ? `💡 Dica (${dicaCooldown})` : '💡 Dica'}
-                    </button>
+                        <button
+                          className="fi-btn-skip"
+                          onClick={handleDica}
+                          disabled={loading || loadingDica || dicaCooldown > 0}
+                          title={dicaCooldown > 0 ? `A próxima dica libera em ${dicaCooldown} filme(s)` : 'Dica'}
+                        >
+                          {loadingDica ? 'Buscando...' : dicaCooldown > 0 ? `💡 Dica (${dicaCooldown})` : '💡 Dica'}
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
 

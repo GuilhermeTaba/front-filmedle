@@ -10,11 +10,11 @@
   --muted:       rgba(242,242,242,0.42);
   --red:         #E5383B;
   --green:       #22C55E;
-  --green-dim:   rgba(34,197,94,0.42);
+  --green-dim:   rgba(34,197,94,0.62);
   --amber:       #EAB308;
-  --amber-dim:   rgba(234,179,8,0.40);
+  --amber-dim:   rgba(234,179,8,0.58);
   --wrong:       #EF4444;
-  --wrong-dim:   rgba(239,68,68,0.38);
+  --wrong-dim:   rgba(239,68,68,0.56);
   --infinite:    #A855F7;
   --inf-dim:     rgba(168,85,247,0.14);
   --inf-border:  rgba(168,85,247,0.3);
@@ -506,8 +506,8 @@
   border: 1px solid transparent;
   backface-visibility: hidden;
   animation: cell-reveal 0.46s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .fi-attempt-card .fi-cell:nth-child(1) { animation-delay: calc(var(--row-delay, 0s) + 0.00s); }
