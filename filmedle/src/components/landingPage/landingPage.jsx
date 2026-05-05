@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import './LandingPage.css'
-import CinemaBackground from '../cinemaBackground/CinemaBackground'
+import './landingPage.css'
+import CinemaBackground from '../cinemaBackground/cinemaBackground'
 
 const LandingPage = () => {
   const navigate = useNavigate()

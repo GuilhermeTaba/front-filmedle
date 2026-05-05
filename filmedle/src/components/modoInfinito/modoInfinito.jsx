@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import './ModoInfinito.css'
-import CinemaBackground from '../cinemaBackground/CinemaBackground'
+import './modoInfinito.css'
+import CinemaBackground from '../cinemaBackground/cinemaBackground'
 
 const BASE_URL = '/api'
 
