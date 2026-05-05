@@ -234,8 +234,19 @@ export default function ModoDiario() {
     if (!partidaId || gameOver) return
     try {
       const filme = await desistir(partidaId)
-      setNomeAlvo(filme?.nome ?? null)
-      setFilmeRevelado(filme ?? null)
+      const revealPalpite = {
+        id: '_reveal',
+        _reveal: true,
+        filme: filme ?? {},
+        genero: 'CORRETO',
+        paises: 'CORRETO',
+        lancamento: 'CORRETO',
+        receita: 'CORRETO',
+        produtora: 'CORRETO',
+        elenco: 'CORRETO',
+        diretor: 'CORRETO',
+      }
+      setPalpites(prev => [revealPalpite, ...prev])
       setGameOver(true)
       setWon(false)
     } catch (err) {
@@ -262,7 +273,7 @@ export default function ModoDiario() {
     const filme = palpite.filme ?? {}
     if (col.statusKey === null) {
       return (
-        <div key={col.label} className="fd-cell wrong">
+        <div key={col.label} className={`fd-cell ${palpite._reveal ? 'correct' : 'wrong'}`}>
           {fmt(filme[col.filmeKey])}
         </div>
       )
@@ -412,40 +423,14 @@ export default function ModoDiario() {
               </section>
             )}
 
-            {/* Banner de resultado */}
-            {gameOver && (
-              <div className={`fd-result-banner ${won ? 'win' : 'lose'}`}>
-                <div className="fd-result-emoji">{won ? '🎬' : '💀'}</div>
-                <div className={`fd-result-title ${won ? 'win' : 'lose'}`}>
-                  {won ? 'Você Acertou!' : 'Game Over'}
-                </div>
+            {/* Banner de resultado — só no win */}
+            {gameOver && won && (
+              <div className="fd-result-banner win">
+                <div className="fd-result-emoji">🎬</div>
+                <div className="fd-result-title win">Você Acertou!</div>
                 <div className="fd-result-sub">
-                  {won
-                    ? <>O filme era <strong>{nomeAlvo ?? 'desconhecido'}</strong> — acertou em {palpites.length} tentativa{palpites.length !== 1 ? 's' : ''}!</>
-                    : <>O filme era <strong>{nomeAlvo ?? 'desconhecido'}</strong>. Volte amanhã para um novo desafio!</>
-                  }
+                  O filme era <strong>{nomeAlvo ?? 'desconhecido'}</strong> — acertou em {palpites.length} tentativa{palpites.length !== 1 ? 's' : ''}!
                 </div>
-                {!won && filmeRevelado && (
-                  <div className="fd-film-reveal">
-                    {(filmeRevelado.posterUrl || filmeRevelado.poster || filmeRevelado.imagemUrl || filmeRevelado.urlPoster) && (
-                      <img
-                        className="fd-reveal-poster"
-                        src={filmeRevelado.posterUrl || filmeRevelado.poster || filmeRevelado.imagemUrl || filmeRevelado.urlPoster}
-                        alt={filmeRevelado.nome}
-                      />
-                    )}
-                    <div className="fd-reveal-info">
-                      <div className="fd-reveal-nome">{filmeRevelado.nome}</div>
-                      <div className="fd-reveal-grid">
-                        {filmeRevelado.lancamento && <div className="fd-reveal-item"><span className="fd-reveal-label">Ano</span><span className="fd-reveal-value">{filmeRevelado.lancamento}</span></div>}
-                        {filmeRevelado.genero     && <div className="fd-reveal-item"><span className="fd-reveal-label">Gênero</span><span className="fd-reveal-value">{fmt(filmeRevelado.genero)}</span></div>}
-                        {filmeRevelado.diretor    && <div className="fd-reveal-item"><span className="fd-reveal-label">Diretor</span><span className="fd-reveal-value">{fmt(filmeRevelado.diretor)}</span></div>}
-                        {filmeRevelado.produtora  && <div className="fd-reveal-item"><span className="fd-reveal-label">Produtora</span><span className="fd-reveal-value">{fmt(filmeRevelado.produtora)}</span></div>}
-                        {filmeRevelado.elenco     && <div className="fd-reveal-item"><span className="fd-reveal-label">Elenco</span><span className="fd-reveal-value">{fmt(filmeRevelado.elenco)}</span></div>}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </>

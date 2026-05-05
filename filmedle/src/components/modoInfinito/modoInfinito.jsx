@@ -281,16 +281,26 @@ export default function ModoInfinito() {
 
     try {
       const filmeData = await desistirPartida(partidaId)
-      // filmeData = ResponseFilmeDTO retornado pelo backend
       const nomeFilme = filmeData?.nome ?? filmeData?.title ?? filmeData?.titulo ?? 'desconhecido'
-      setFilmeRevelado(filmeData)
+      const revealPalpite = {
+        id: '_reveal',
+        _reveal: true,
+        filme: filmeData ?? {},
+        genero: 'CORRETO',
+        paises: 'CORRETO',
+        lancamento: 'CORRETO',
+        receita: 'CORRETO',
+        produtora: 'CORRETO',
+        elenco: 'CORRETO',
+        diretor: 'CORRETO',
+      }
+      setPalpites(prev => [revealPalpite, ...prev])
       setNomeAlvo(nomeFilme)
       setStreak(0)
       setRoundOver(true)
       setRoundWon(false)
     } catch (err) {
       console.error('Erro ao desistir:', err)
-      // Mesmo com erro, encerra a rodada localmente
       setStreak(0)
       setRoundOver(true)
       setRoundWon(false)
@@ -324,7 +334,7 @@ export default function ModoInfinito() {
 
     if (col.statusKey === null) {
       return (
-        <div key={col.label} className="fi-cell wrong">
+        <div key={col.label} className={`fi-cell ${palpite._reveal ? 'correct' : 'wrong'}`}>
           {fmt(filme[col.filmeKey])}
         </div>
       )
@@ -501,52 +511,24 @@ export default function ModoInfinito() {
               </section>
             )}
 
-            {roundOver && (
-              <div className={`fi-result-banner ${roundWon ? 'win' : 'skip'}`}>
-                <div className="fi-result-emoji">{roundWon ? getStreakEmoji(streak) : '🏳️'}</div>
-                <div className={`fi-result-title ${roundWon ? 'win' : 'skip'}`}>
-                  {roundWon ? 'Acertou!' : 'Você Desistiu'}
-                </div>
+            {roundOver && roundWon && (
+              <div className="fi-result-banner win">
+                <div className="fi-result-emoji">{getStreakEmoji(streak)}</div>
+                <div className="fi-result-title win">Acertou!</div>
                 <div className="fi-result-sub">
-                  {roundWon ? (
-                    <>
-                      O filme era <strong>{nomeAlvo ?? 'desconhecido'}</strong> — acertou em {palpites.length} tentativa{palpites.length !== 1 ? 's' : ''}!
-                      {streak > 1 && <> Sequência: <strong style={{ color: 'var(--gold)' }}>{streak} 🔥</strong></>}
-                    </>
-                  ) : (
-                    <>O filme era <strong>{nomeAlvo ?? 'desconhecido'}</strong>. Sequência perdida.</>
-                  )}
+                  O filme era <strong>{nomeAlvo ?? 'desconhecido'}</strong> — acertou em {palpites.length} tentativa{palpites.length !== 1 ? 's' : ''}!
+                  {streak > 1 && <> Sequência: <strong style={{ color: 'var(--gold)' }}>{streak} 🔥</strong></>}
                 </div>
-                {!roundWon && filmeRevelado && (
-                  <div className="fi-film-reveal">
-                    {(filmeRevelado.posterUrl || filmeRevelado.poster || filmeRevelado.imagemUrl || filmeRevelado.urlPoster) && (
-                      <img
-                        className="fi-reveal-poster"
-                        src={filmeRevelado.posterUrl || filmeRevelado.poster || filmeRevelado.imagemUrl || filmeRevelado.urlPoster}
-                        alt={filmeRevelado.nome}
-                      />
-                    )}
-                    <div className="fi-reveal-info">
-                      <div className="fi-reveal-nome">{filmeRevelado.nome}</div>
-                      <div className="fi-reveal-grid">
-                        {filmeRevelado.lancamento && <div className="fi-reveal-item"><span className="fi-reveal-label">Ano</span><span className="fi-reveal-value">{filmeRevelado.lancamento}</span></div>}
-                        {filmeRevelado.genero     && <div className="fi-reveal-item"><span className="fi-reveal-label">Gênero</span><span className="fi-reveal-value">{fmt(filmeRevelado.genero)}</span></div>}
-                        {filmeRevelado.diretor    && <div className="fi-reveal-item"><span className="fi-reveal-label">Diretor</span><span className="fi-reveal-value">{fmt(filmeRevelado.diretor)}</span></div>}
-                        {filmeRevelado.produtora  && <div className="fi-reveal-item"><span className="fi-reveal-label">Produtora</span><span className="fi-reveal-value">{fmt(filmeRevelado.produtora)}</span></div>}
-                        {filmeRevelado.elenco     && <div className="fi-reveal-item"><span className="fi-reveal-label">Elenco</span><span className="fi-reveal-value">{fmt(filmeRevelado.elenco)}</span></div>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 <div className="fi-round-stats">
                   <div className="fi-rstat"><span>{streak}</span><small>Sequência atual</small></div>
                   <div className="fi-rstat"><span>{totalSolved}</span><small>Total acertados</small></div>
                 </div>
-
-                <button className="fi-btn-next" onClick={handleNext}>
-                  {roundWon ? 'Próximo Filme ▶' : 'Jogar Novamente ▶'}
-                </button>
+                <button className="fi-btn-next" onClick={handleNext}>Próximo Filme ▶</button>
+              </div>
+            )}
+            {roundOver && !roundWon && (
+              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                <button className="fi-btn-next" onClick={handleNext}>Jogar Novamente ▶</button>
               </div>
             )}
           </>
