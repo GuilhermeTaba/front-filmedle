@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import './ModoDiario.css'
+import './modoDiario.css'
 
 // ─────────────────────────────────────────────────────────────────
 // CONFIG

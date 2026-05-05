@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import './ModoInfinito.css'
+import './modoInfinito.css'
 
 const BASE_URL = 'http://localhost:8080'
 
