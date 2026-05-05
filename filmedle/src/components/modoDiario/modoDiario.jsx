@@ -60,8 +60,7 @@ const MAX_ATTEMPTS = 6
  * Retorna o ResponsePartidaDTO: { id, filme, palpites }
  */
 async function initGame() {
-  const res = await fetch(`${BASE_URL}/partida
-    /inicia`, {
+  const res = await fetch(`${BASE_URL}/partida/inicia`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
   })
