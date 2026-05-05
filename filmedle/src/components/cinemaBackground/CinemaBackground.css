@@ -1,0 +1,57 @@
+.cb-root {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #08080e;
+}
+
+.cb-gradients {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 20%, rgba(225,29,72,0.18), transparent 60%),
+    radial-gradient(ellipse 50% 60% at 75% 70%, rgba(96,165,250,0.12), transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 100%, rgba(224,185,120,0.08), transparent 60%);
+}
+
+.cb-posters {
+  position: absolute;
+  inset: 0;
+  opacity: 0.30;
+}
+
+.cb-poster {
+  position: absolute;
+  width: 155px;
+  height: 232px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(255,255,255,0.05);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  animation: cb-float ease-in-out infinite;
+}
+
+@keyframes cb-float {
+  0%, 100% { translate: 0 0; }
+  50%       { translate: 0 -20px; }
+}
+
+.cb-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 90% at 50% 50%, transparent 45%, rgba(0,0,0,0.45) 100%),
+    linear-gradient(180deg, transparent 0%, transparent 70%, #08080e 100%);
+}
+
+.cb-noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 200px;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+}
