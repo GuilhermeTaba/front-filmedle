@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import './cinemaBackground.css'
+import './CinemaBackground.css'
 
 const TMDB = 'https://image.tmdb.org/t/p/w342'
 
