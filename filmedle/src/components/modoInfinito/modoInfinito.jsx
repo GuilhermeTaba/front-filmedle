@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
-import './modoInfinito.css'
+import { useNavigate } from 'react-router-dom'
+import './ModoInfinito.css'
+import CinemaBackground from '../cinemaBackground/CinemaBackground'
 
 const BASE_URL = 'http://localhost:8080'
 
@@ -83,6 +85,12 @@ function fmt(value) {
   return String(value)
 }
 
+function fmtReceita(value) {
+  const n = Number(value)
+  if (!value || isNaN(n)) return fmt(value)
+  return new Intl.NumberFormat('pt-BR').format(n)
+}
+
 // Renderiza lista de países como bandeiras com tooltip
 function PaisesFlags({ paises }) {
   if (!Array.isArray(paises) || paises.length === 0) return <span>—</span>
@@ -150,8 +158,7 @@ const COLUMNS = [
 // COMPONENT
 // ─────────────────────────────────────────────────────────────────
 export default function ModoInfinito() {
-  const bgSrc   = '/img/imagem_fundo_filmedle.jpg'
-  const logoSrc = '/img/filmedle.png'
+  const navigate = useNavigate()
 
   const [moviesList,   setMoviesList]   = useState([])
   const [partidaId,    setPartidaId]    = useState(null)
@@ -163,7 +170,6 @@ export default function ModoInfinito() {
   const [initError,    setInitError]    = useState(false)
 
   const [streak,        setStreak]        = useState(0)
-  const [bestStreak,    setBestStreak]    = useState(0)
   const [totalSolved,   setTotalSolved]   = useState(0)
   const [totalAttempts, setTotalAttempts] = useState(0)
 
@@ -255,7 +261,6 @@ export default function ModoInfinito() {
       if (ultimo && palpiteAcertou(ultimo)) {
         const newStreak = streak + 1
         setStreak(newStreak)
-        setBestStreak(b => Math.max(b, newStreak))
         setTotalSolved(s => s + 1)
         setNomeAlvo(ultimo.filme?.nome ?? selected.nome)
         setRoundWon(true)
@@ -339,7 +344,7 @@ export default function ModoInfinito() {
 
     // Ano e Receita → mostram seta de direção
     const comSeta = col.filmeKey === 'lancamento' || col.filmeKey === 'receita'
-    const valor   = fmt(filme[col.filmeKey])
+    const valor   = col.filmeKey === 'receita' ? fmtReceita(filme[col.filmeKey]) : fmt(filme[col.filmeKey])
     const display = comSeta ? `${valor}${seta(status)}` : valor
 
     return (
@@ -354,26 +359,22 @@ export default function ModoInfinito() {
   // ─────────────────────────────────────────────────────────────────
   return (
     <div className="fi-page">
-      {bgSrc && <img src={bgSrc} alt="" className="fi-bg" />}
-      {bgSrc && <div className="fi-overlay" />}
+      <CinemaBackground />
+      <button className="fi-back-btn" onClick={() => navigate('/')}>← Início</button>
 
       <div className="fi-container">
         <header className="fi-header">
-          {logoSrc
-            ? <img src={logoSrc} alt="Filmedle" className="fi-logo-img" />
-            : <h1 className="fi-logo">Filmedle</h1>}
-          <span className="fi-mode-tag">◆ Modo Infinito</span>
+          <div className="fi-logo-css">
+            <span className="fi-logo-play">▶</span>
+            <span className="fi-logo-name">FILMEDLE</span>
+          </div>
+          <span className="fi-mode-tag">Modo Infinito</span>
         </header>
 
         <div className="fi-stats-bar">
           <div className="fi-stat">
             <span className="fi-stat-value">{getStreakEmoji(streak)} {streak}</span>
             <span className="fi-stat-label">Sequência</span>
-          </div>
-          <div className="fi-stat-divider" />
-          <div className="fi-stat">
-            <span className="fi-stat-value">{bestStreak}</span>
-            <span className="fi-stat-label">Melhor</span>
           </div>
           <div className="fi-stat-divider" />
           <div className="fi-stat">
@@ -384,19 +385,6 @@ export default function ModoInfinito() {
           <div className="fi-stat">
             <span className="fi-stat-value">{totalAttempts}</span>
             <span className="fi-stat-label">Tentativas</span>
-          </div>
-        </div>
-
-        <div className="fi-clue-box">
-          <div className="fi-clue-label">Modo Infinito</div>
-          <div className="fi-clue-text">
-            Sem limites — adivinhe quantos filmes quiser!
-            Campos em <span style={{ color: 'var(--green)' }}>verde</span> = acerto,&nbsp;
-            <span style={{ color: 'var(--gold)' }}>amarelo</span> = próximo,&nbsp;
-            <span style={{ color: '#f88' }}>vermelho</span> = errado.
-            {palpites.length > 0 && !roundOver && (
-              <> · <strong style={{ color: 'var(--red-bright)' }}>{palpites.length}</strong> tentativa{palpites.length !== 1 ? 's' : ''} nesta rodada.</>
-            )}
           </div>
         </div>
 
@@ -451,7 +439,6 @@ export default function ModoInfinito() {
                         ? <div className="fi-dropdown-empty">Nenhum filme encontrado</div>
                         : filtered.map(m => (
                             <div key={m.id} className="fi-dropdown-item" onMouseDown={() => handleSelect(m)}>
-                              <span className="fi-item-id">#{m.id}</span>
                               {m.nome}
                             </div>
                           ))
@@ -507,7 +494,7 @@ export default function ModoInfinito() {
                 </div>
 
                 {palpites.map((palpite, i) => (
-                  <div key={palpite.id ?? i} className="fi-attempt-card" style={{ animationDelay: `${i * 0.04}s` }}>
+                  <div key={palpite.id ?? i} className="fi-attempt-card" style={{ '--row-delay': `${i * 0.12}s` }}>
                     {COLUMNS.map(col => renderCell(col, palpite))}
                   </div>
                 ))}
@@ -530,10 +517,30 @@ export default function ModoInfinito() {
                     <>O filme era <strong>{nomeAlvo ?? 'desconhecido'}</strong>. Sequência perdida.</>
                   )}
                 </div>
+                {!roundWon && filmeRevelado && (
+                  <div className="fi-film-reveal">
+                    {(filmeRevelado.posterUrl || filmeRevelado.poster || filmeRevelado.imagemUrl || filmeRevelado.urlPoster) && (
+                      <img
+                        className="fi-reveal-poster"
+                        src={filmeRevelado.posterUrl || filmeRevelado.poster || filmeRevelado.imagemUrl || filmeRevelado.urlPoster}
+                        alt={filmeRevelado.nome}
+                      />
+                    )}
+                    <div className="fi-reveal-info">
+                      <div className="fi-reveal-nome">{filmeRevelado.nome}</div>
+                      <div className="fi-reveal-grid">
+                        {filmeRevelado.lancamento && <div className="fi-reveal-item"><span className="fi-reveal-label">Ano</span><span className="fi-reveal-value">{filmeRevelado.lancamento}</span></div>}
+                        {filmeRevelado.genero     && <div className="fi-reveal-item"><span className="fi-reveal-label">Gênero</span><span className="fi-reveal-value">{fmt(filmeRevelado.genero)}</span></div>}
+                        {filmeRevelado.diretor    && <div className="fi-reveal-item"><span className="fi-reveal-label">Diretor</span><span className="fi-reveal-value">{fmt(filmeRevelado.diretor)}</span></div>}
+                        {filmeRevelado.produtora  && <div className="fi-reveal-item"><span className="fi-reveal-label">Produtora</span><span className="fi-reveal-value">{fmt(filmeRevelado.produtora)}</span></div>}
+                        {filmeRevelado.elenco     && <div className="fi-reveal-item"><span className="fi-reveal-label">Elenco</span><span className="fi-reveal-value">{fmt(filmeRevelado.elenco)}</span></div>}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="fi-round-stats">
                   <div className="fi-rstat"><span>{streak}</span><small>Sequência atual</small></div>
-                  <div className="fi-rstat"><span>{bestStreak}</span><small>Melhor sequência</small></div>
                   <div className="fi-rstat"><span>{totalSolved}</span><small>Total acertados</small></div>
                 </div>
 

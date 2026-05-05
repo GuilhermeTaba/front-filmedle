@@ -1,27 +1,20 @@
-/* ── LandingPage.css ─────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&display=swap');
-
-/* Reset global — remove margens e fundo branco */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* ── RESET ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #0a0a0a;
-  scrollbar-width: none; /* Firefox */
+  background: #0B0B0B;
+  scrollbar-width: none;
 }
 
 html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
+body::-webkit-scrollbar { display: none; }
 
+/* ── ROOT ──────────────────────────────────────────────────────── */
 .lp-root {
   position: relative;
   width: 100vw;
@@ -30,244 +23,476 @@ body::-webkit-scrollbar {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-color: #0a0a0a;
-  font-family: 'Barlow', 'Helvetica Neue', sans-serif;
+  font-family: 'Outfit', sans-serif;
 }
 
-/* ── Fundo ───────────────────────────────────────────────────────────────── */
-
+/* ── BACKGROUND: dot grid + vinheta ───────────────────────────── */
 .lp-bg {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('');          /* ← URL da imagem aqui */
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: local;
-  background-color: #1a0000;
+  inset: 0;
+  background-color: #0B0B0B;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
   z-index: 0;
 }
 
-/* Overlay — 55% de opacidade */
-.lp-overlay {
+/* Vinheta suave sobre o grid — foco no centro */
+.lp-bg::after {
+  content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: radial-gradient(ellipse 68% 68% at 50% 50%, #0B0B0B 0%, transparent 75%);
+}
+
+/* Scan-lines sutis */
+.lp-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 3px,
+    rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+  );
   z-index: 1;
 }
 
-/* ── Cantos decorativos ──────────────────────────────────────────────────── */
-
-.lp-corner-tl,
-.lp-corner-br {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  z-index: 2;
-}
-
-.lp-corner-tl {
-  top: 28px;
-  left: 28px;
-  border-top: 2px solid rgba(204, 0, 0, 0.65);
-  border-left: 2px solid rgba(204, 0, 0, 0.65);
-}
-
-.lp-corner-br {
-  bottom: 28px;
-  right: 28px;
-  border-bottom: 2px solid rgba(204, 0, 0, 0.65);
-  border-right: 2px solid rgba(204, 0, 0, 0.65);
-}
-
-/* ── Conteúdo central ────────────────────────────────────────────────────── */
-
+/* ── CONTEÚDO ──────────────────────────────────────────────────── */
 .lp-content {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 32px;
-  padding: 48px 32px;
+  gap: 36px;
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 520px;
 }
 
-/* ── Logo ────────────────────────────────────────────────────────────────── */
+/* ── LOGO CSS ──────────────────────────────────────────────────── */
+.lp-logo-wrap {
+  text-align: center;
+  animation: enter-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
-.lp-logo-placeholder {
+.lp-logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 4px 32px rgba(0, 0, 0, 0.95));
-  max-width: 90vw;
-  overflow: visible;
+  gap: 10px;
+  line-height: 1;
 }
 
-.lp-logo-img {
-  max-height: 180px;
-  max-width: min(520px, 80vw);
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  display: block;
+.lp-logo-play {
+  font-size: clamp(1.4rem, 5vw, 2.6rem);
+  color: #E5383B;
+  animation: play-pulse 3s ease-in-out infinite;
+  line-height: 1;
+  transform: translateY(-0.12em);
 }
 
-/* ── Divisor ─────────────────────────────────────────────────────────────── */
-
-.lp-divider {
-  width: 48px;
-  height: 2px;
-  background: #cc0000;
-  opacity: 0.7;
+@keyframes play-pulse {
+  0%, 100% { opacity: 0.85; }
+  50%       { opacity: 1; text-shadow: 0 0 18px rgba(229,56,59,0.55); }
 }
 
-/* ── Botões verticais ────────────────────────────────────────────────────── */
+.lp-logo-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.8rem, 14vw, 7.5rem);
+  letter-spacing: 0.05em;
+  color: #F2F2F2;
+  text-shadow: 0 2px 30px rgba(0,0,0,0.8);
+}
 
+.lp-tagline {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(0.7rem, 2vw, 0.88rem);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(242,242,242,0.38);
+  margin-top: 6px;
+}
+
+/* ── DEMO INTERATIVO ───────────────────────────────────────────── */
+.lp-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  animation: enter-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.12s;
+  opacity: 0;
+}
+
+.lp-demo-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(242,242,242,0.32);
+}
+
+/* Linha de demo com células coloridas */
+.lp-demo-row {
+  display: flex;
+  gap: 6px;
+  perspective: 800px;
+}
+
+.lp-demo-cell {
+  padding: 9px 14px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  backface-visibility: hidden;
+  animation: demo-flip 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  white-space: nowrap;
+}
+
+.lp-demo-cell:nth-child(1) { animation-delay: 0.35s; }
+.lp-demo-cell:nth-child(2) { animation-delay: 0.6s; }
+.lp-demo-cell:nth-child(3) { animation-delay: 0.85s; }
+.lp-demo-cell:nth-child(4) { animation-delay: 1.1s; }
+
+@keyframes demo-flip {
+  0%   { transform: rotateX(-90deg) scale(0.88); opacity: 0; }
+  58%  { transform: rotateX(8deg) scale(1.03); opacity: 1; }
+  100% { transform: rotateX(0) scale(1); opacity: 1; }
+}
+
+/* nome do filme — neutro */
+.lp-demo-name {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.1);
+  color: rgba(242,242,242,0.7);
+}
+
+/* correto — verde */
+.lp-demo-correct {
+  background: rgba(34,197,94,0.14);
+  border-color: rgba(34,197,94,0.3);
+  color: #4ade80;
+}
+
+/* parcial — âmbar */
+.lp-demo-partial {
+  background: rgba(234,179,8,0.14);
+  border-color: rgba(234,179,8,0.3);
+  color: #facc15;
+}
+
+/* errado — vermelho */
+.lp-demo-wrong {
+  background: rgba(239,68,68,0.12);
+  border-color: rgba(239,68,68,0.25);
+  color: #f87171;
+}
+
+/* Legenda de cores */
+.lp-legend {
+  display: flex;
+  gap: 20px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  animation: enter-up 0.5s ease both;
+  animation-delay: 1.35s;
+  opacity: 0;
+}
+
+.lp-legend-correct { color: #4ade80; }
+.lp-legend-partial  { color: #facc15; }
+.lp-legend-wrong    { color: #f87171; }
+
+/* ── BOTÕES ────────────────────────────────────────────────────── */
 .lp-buttons {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  max-width: 400px;
+  animation: enter-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.2s;
+  opacity: 0;
 }
 
 .lp-btn {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
-  padding: 18px 20px;
-  border-radius: 4px;
+  padding: 16px 20px;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.25s ease;
   text-align: left;
   position: relative;
   overflow: hidden;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s, background 0.18s;
 }
 
-/* brilho no hover */
+/* Shimmer no hover */
 .lp-btn::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
-  transform: translateX(-100%);
-  transition: transform 0.4s ease;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.07), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
 }
 
-.lp-btn:hover::after {
-  transform: translateX(100%);
-}
+.lp-btn:hover::after { left: 150%; }
+.lp-btn:hover { transform: translateY(-2px); }
+.lp-btn:active { transform: translateY(0); transition-duration: 0.08s; }
 
-/* ── Primário ────────────────────────────────────────────────────────────── */
-
-.lp-btn-primary {
-  background: rgba(180, 0, 0, 0.75);
-  border-left: 4px solid #ff1a1a;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 20px rgba(180, 0, 0, 0.35);
-}
-
-.lp-btn-primary:hover {
-  background: rgba(204, 0, 0, 0.90);
-  box-shadow: 0 8px 32px rgba(204, 0, 0, 0.55);
-  transform: translateX(4px);
-}
-
-.lp-btn-primary .lp-btn-icon {
-  color: #ff6666;
-}
-
-.lp-btn-primary .lp-btn-title {
-  color: #ffffff;
-}
-
-.lp-btn-primary .lp-btn-desc {
-  color: rgba(255, 200, 200, 0.75);
-}
-
-.lp-btn-primary .lp-btn-arrow {
-  color: rgba(255, 150, 150, 0.7);
-}
-
-/* ── Secundário ──────────────────────────────────────────────────────────── */
-
+/* Ambos os botões — neutro com borda, ficam vermelhos no hover */
+.lp-btn-primary,
 .lp-btn-secondary {
-  background: rgba(20, 0, 0, 0.60);
-  border-left: 4px solid rgba(204, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.35);
 }
 
+.lp-btn-primary:hover,
 .lp-btn-secondary:hover {
-  background: rgba(40, 0, 0, 0.80);
-  border-left-color: #cc0000;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  transform: translateX(4px);
+  background: #E5383B;
+  border-color: #E5383B;
+  box-shadow: 0 8px 36px rgba(229,56,59,0.45);
 }
 
-.lp-btn-secondary .lp-btn-icon {
-  color: rgba(204, 0, 0, 0.7);
-}
-
-.lp-btn-secondary .lp-btn-title {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.lp-btn-secondary .lp-btn-desc {
-  color: rgba(255, 255, 255, 0.45);
-}
-
-.lp-btn-secondary .lp-btn-arrow {
-  color: rgba(255, 255, 255, 0.25);
-}
-
-.lp-btn-secondary:hover .lp-btn-arrow {
-  color: rgba(204, 0, 0, 0.7);
-}
-
-/* ── Partes internas do botão ────────────────────────────────────────────── */
-
+/* Ícone */
 .lp-btn-icon {
-  font-size: 20px;
+  font-size: 1.1rem;
   flex-shrink: 0;
   width: 28px;
   text-align: center;
+  transition: transform 0.2s;
 }
 
+.lp-btn:hover .lp-btn-icon { transform: scale(1.18); }
+.lp-btn-primary .lp-btn-icon,
+.lp-btn-secondary .lp-btn-icon { color: rgba(255,255,255,0.7); }
+
+/* Textos */
 .lp-btn-body {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  flex: 1;
+  gap: 2px;
 }
 
 .lp-btn-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px;
-  letter-spacing: 0.12em;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #F2F2F2;
   line-height: 1;
 }
 
 .lp-btn-desc {
-  font-family: 'Barlow', sans-serif;
-  font-size: 12px;
-  font-weight: 300;
-  letter-spacing: 0.05em;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: rgba(242,242,242,0.55);
 }
 
+.lp-btn-primary .lp-btn-desc { color: rgba(255,255,255,0.65); }
+
+/* Seta */
 .lp-btn-arrow {
-  font-size: 18px;
+  font-size: 1.1rem;
   flex-shrink: 0;
-  transition: transform 0.25s ease;
+  color: rgba(242,242,242,0.5);
+  transition: transform 0.2s, color 0.2s;
 }
 
-.lp-btn:hover .lp-btn-arrow {
-  transform: translateX(4px);
+.lp-btn:hover .lp-btn-arrow { transform: translateX(4px); color: #F2F2F2; }
+
+/* ── HINT ──────────────────────────────────────────────────────── */
+.lp-hint {
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(242,242,242,0.2);
+  animation: enter-up 0.5s ease both;
+  animation-delay: 0.35s;
+  opacity: 0;
+}
+
+/* ── HINT + HELP ROW ───────────────────────────────────────────── */
+.lp-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── BOTÃO COMO JOGAR ──────────────────────────────────────────── */
+.lp-help-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(242,242,242,0.45);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+  white-space: nowrap;
+  animation: enter-up 0.5s ease both;
+  animation-delay: 0.35s;
+  opacity: 0;
+}
+
+.lp-help-btn:hover {
+  color: #F2F2F2;
+  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── MODAL ─────────────────────────────────────────────────────── */
+.lp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  animation: overlay-in 0.2s ease both;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lp-modal {
+  position: relative;
+  background: #111116;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 36px 32px 32px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 20px;
+  animation: modal-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.lp-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: rgba(242,242,242,0.38);
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.15s;
+}
+
+.lp-modal-close:hover { color: #F2F2F2; }
+
+.lp-modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.06em;
+  color: #F2F2F2;
+  margin-bottom: 12px;
+}
+
+.lp-modal-text {
+  font-size: 0.88rem;
+  font-weight: 400;
+  color: rgba(242,242,242,0.6);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.lp-modal-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.lp-modal-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.lp-modal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.lp-modal-row.correct .lp-modal-dot { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+.lp-modal-row.partial .lp-modal-dot { background: #facc15; box-shadow: 0 0 6px #facc15; }
+.lp-modal-row.wrong   .lp-modal-dot { background: #f87171; box-shadow: 0 0 6px #f87171; }
+
+.lp-modal-row.correct { color: #4ade80; }
+.lp-modal-row.partial { color: #facc15; }
+.lp-modal-row.wrong   { color: #f87171; }
+
+.lp-modal-row strong { color: inherit; }
+
+.lp-modal-cols {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 16px;
+}
+
+.lp-modal-col-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(242,242,242,0.28);
+  margin-bottom: 8px;
+}
+
+.lp-modal-cols-list {
+  font-size: 0.82rem;
+  color: rgba(242,242,242,0.55);
+  line-height: 1.6;
+}
+
+/* ── ANIMAÇÃO DE ENTRADA ───────────────────────────────────────── */
+@keyframes enter-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVO ────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .lp-content { gap: 28px; }
+  .lp-demo-cell { padding: 8px 10px; font-size: 0.75rem; }
+  .lp-legend { gap: 14px; font-size: 0.62rem; }
 }

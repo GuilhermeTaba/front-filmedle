@@ -1,63 +1,51 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import './landingPage.css'
-import axios from 'axios'
-
-const apiUrl = import.meta.env.VITE_API_URL
+import './LandingPage.css'
+import CinemaBackground from '../cinemaBackground/CinemaBackground'
 
 const LandingPage = () => {
   const navigate = useNavigate()
 
-
-
   return (
     <div className="lp-root">
 
-      <img src='/img/imagem_fundo_filmedle.jpg' className="lp-bg" />
-      <div className="lp-overlay" />
-
-      <div className="lp-corner-tl" />
-      <div className="lp-corner-br" />
+      <CinemaBackground />
 
       <div className="lp-content">
 
-        {/* Logo */}
-        <div className="lp-logo-placeholder">
-          <img src="/img/filmedle.png" alt="Logo" className="lp-logo-img" />
+        {/* Logo CSS */}
+        <div className="lp-logo-wrap">
+          <div className="lp-logo">
+            <span className="lp-logo-play">▶</span>
+            <span className="lp-logo-text">FILMEDLE</span>
+          </div>
         </div>
 
-        <div className="lp-divider" />
-
-        {/* Botões */}
+        {/* Botões de modo */}
         <div className="lp-buttons">
+          <button className="lp-btn lp-btn-primary" onClick={() => navigate('/diario')}>
+            <span className="lp-btn-icon">◈</span>
+            <span className="lp-btn-body">
+              <span className="lp-btn-title">Modo Diário</span>
+              <span className="lp-btn-desc">Um desafio novo a cada dia, para todos</span>
+            </span>
+            <span className="lp-btn-arrow">→</span>
+          </button>
 
-          {/* Modo Infinito */}
-          <button
-            className="lp-btn lp-btn-primary"
-            onClick={() => navigate('/infinito')}
-          >
-            <div className="lp-btn-icon">▶</div>
-            <div className="lp-btn-body">
+          <button className="lp-btn lp-btn-secondary" onClick={() => navigate('/infinito')}>
+            <span className="lp-btn-icon">▶</span>
+            <span className="lp-btn-body">
               <span className="lp-btn-title">Modo Infinito</span>
-            </div>
-            <div className="lp-btn-arrow">→</div>
+              <span className="lp-btn-desc">Sem limite — adivinhe quantos filmes quiser</span>
+            </span>
+            <span className="lp-btn-arrow">→</span>
           </button>
-
-          {/* Modo Diário */}
-          <button
-            className="lp-btn lp-btn-secondary"
-            onClick={() => navigate('/diario')}
-
-          >
-            <div className="lp-btn-icon">◈</div>
-            <div className="lp-btn-body">
-              <span className="lp-btn-title">Modo Diario</span>
-            </div>
-            <div className="lp-btn-arrow">→</div>
-          </button>
-
         </div>
+
+        <p className="lp-hint">Selecione um modo para começar</p>
+
       </div>
+
     </div>
   )
 }
