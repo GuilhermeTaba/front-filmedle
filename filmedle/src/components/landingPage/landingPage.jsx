@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import './LandingPage.css'
+import './landingPage.css'
 import axios from 'axios'
 
 const apiUrl = import.meta.env.VITE_API_URL
